@@ -4,8 +4,9 @@ pragma solidity ^0.8.12;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract ShirokumaStudentV1 is ERC721Enumerable, Ownable {
+contract ShirokumaStudentV1 is ERC721Enumerable, Ownable, ReentrancyGuard {
 
     uint256 _maxTotal;
     uint256 _money;
@@ -58,7 +59,7 @@ contract ShirokumaStudentV1 is ERC721Enumerable, Ownable {
         return output;
     }
 
-    function claim(string memory name, string memory description) public {
+    function claim(string memory name, string memory description) public nonReentrant {
         uint256 total = totalSupply();
         require(_money <= _token.allowance(msg.sender, address(this)) && total < _maxTotal && balanceOf(msg.sender) == 0);
         _token.transferFrom(msg.sender, address(this), _money);
