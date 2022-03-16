@@ -3,8 +3,9 @@ pragma solidity ^0.8.12;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract BeatLoot is ERC721Enumerable, Ownable {
+contract BeatLoot is ERC721Enumerable, Ownable, ReentrancyGuard  {
     string[] ipfs;
     
     function random(string memory input) internal pure returns (uint256) {
@@ -43,17 +44,17 @@ contract BeatLoot is ERC721Enumerable, Ownable {
         uint256 rare = random(string(abi.encodePacked(tokenId, "guitarA"))) % 100;
         // 10%
         if (rare < 10) {
-            string[5] memory array = ["Chill arp", "Calm arp", "Usual morning", "Hope", "Between happiness"];
+            string[5] memory array = ["Hard worker", "Calm arp", "Take a break", "Hope", "Between happiness"];
             uint256 ran = rare % 5;
             return array[ran];
         // 30%
         } else if (rare < 40) {
-            string[5] memory array = ["On the way home", "Hard worker", "Dreams that never come true", "Somehow", "Live tomorrow"];
+            string[5] memory array = ["On the way home", "Chill arp", "Dreams that never come true", "Somehow", "Live tomorrow"];
             uint256 ran = rare % 5;
             return array[ran];
         // 60%
         } else {
-            string[5] memory array = ["Familiar cityscape", "Day to do nothing", "Take a break", "After night shift", "Return to that city"];
+            string[5] memory array = ["Familiar cityscape", "Day to do nothing", "Usual morning", "After night shift", "Return to that city"];
             uint256 ran = rare % 5;
             return array[ran];
         }
@@ -119,7 +120,7 @@ contract BeatLoot is ERC721Enumerable, Ownable {
         }
     }
     
-    function getLoot(uint256 tokenId) public view onlyOwner returns (string memory) {
+    function getLoot(uint256 tokenId) public pure returns (string memory) {
         string[13] memory parts;
 
         parts[0] = '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="350" height="350"><path d="M0 0 L 350 0 L 350 350 L 0 350" fill="black"/><text x="10" y="20" fill="white">';
@@ -166,13 +167,15 @@ contract BeatLoot is ERC721Enumerable, Ownable {
         return output;
     }
     
-    function claim(uint256 tokenId, string memory ipfs_url) public onlyOwner {
-        ipfs[tokenId] = ipfs_url;
-        require(tokenId > 0 && tokenId < 11, "Token ID invalid");
-        _safeMint(owner(), tokenId);
+    function claim(string memory ipfs_url) public onlyOwner nonReentrant {
+        ipfs.push(ipfs_url);
+        require(totalSupply() < 3001, "Token ID invalid");
+        _safeMint(owner(), totalSupply() + 1);
     }
     
-    constructor() ERC721("BeatLoot", "BEAT") Ownable() {}
+    constructor() ERC721("BeatLoot", "BEAT") Ownable() {
+        ipfs.push("");
+    }
 }
 
 /// [MIT License]
