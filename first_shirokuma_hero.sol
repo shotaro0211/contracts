@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract ShirokumaStudentV1 is ERC721Enumerable, Ownable, ReentrancyGuard {
+contract FirstShirokumaHero is ERC721Enumerable, Ownable, ReentrancyGuard {
 
     uint256 _maxTotal;
     uint256 _money;
@@ -21,19 +21,19 @@ contract ShirokumaStudentV1 is ERC721Enumerable, Ownable, ReentrancyGuard {
     }
     Shirokuma[] private _shirokuma;
     
-    function getColor(address shirokumaAdress, string memory name) internal pure returns (string memory) {
-        uint256 _firstColor = Utils.random(string(abi.encodePacked(shirokumaAdress, name, "Color1"))) % 256;
-        uint256 _secondColor = Utils.random(string(abi.encodePacked(shirokumaAdress, name, "Color2"))) % 256;
-        uint256 _thirdColor = Utils.random(string(abi.encodePacked(shirokumaAdress, name, "Color3"))) % 256;
+    function getColor(string memory spell, address shirokumaAdress, string memory name) internal pure returns (string memory) {
+        uint256 _firstColor = Utils.random(string(abi.encodePacked(spell, shirokumaAdress, name, "Color1"))) % 256;
+        uint256 _secondColor = Utils.random(string(abi.encodePacked(spell, shirokumaAdress, name, "Color2"))) % 256;
+        uint256 _thirdColor = Utils.random(string(abi.encodePacked(spell, shirokumaAdress, name, "Color3"))) % 256;
         return string(abi.encodePacked('RGB(', Utils.toString(_firstColor), ',', Utils.toString(_secondColor), ',', Utils.toString(_thirdColor), ')'));
     }
     
     function _getShirokumaSvg(Shirokuma memory shirokuma) internal pure returns (string memory) {
-        string[12] memory parts;
-        string memory bg = getColor(shirokuma.owner, 'background');
-        string memory st0 = getColor(shirokuma.owner, 'st0');
-        string memory st1 = getColor(shirokuma.owner, 'st1');
-        string memory st2 = getColor(shirokuma.owner, 'st2');
+        string[11] memory parts;
+        string memory bg = getColor(shirokuma.description, shirokuma.owner, 'background');
+        string memory st0 = getColor(shirokuma.description, shirokuma.owner, 'st0');
+        string memory st1 = getColor(shirokuma.description, shirokuma.owner, 'st1');
+        string memory st2 = getColor(shirokuma.description, shirokuma.owner, 'st2');
         parts[0] = string(abi.encodePacked('<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="500" height="500"><path d="M0 0 L 500 0 L 500 500 L 0 500" fill="', bg, '"/>'));
         parts[1] = string(abi.encodePacked('<text x="380" y="470" fill="white" font-family="cursive" font-size="60">Lv', Utils.toString(Utils.getLevel(shirokuma.exp)), '</text>'));
         parts[2] = string(abi.encodePacked('<path fill="#FFFFFF" stroke="', st0, '" stroke-width="5" stroke-miterlimit="10" d="M351.43,324.24c-17.52-23.48-38.3-38.27-49.23-35.81H193.45c-10.59-3.78-32.2,11.22-50.32,35.5 c-19.46,26.08-27.51,52.99-17.98,60.1c9.53,7.11,33.03-8.27,52.49-34.35c4.46-5.97,8.31-11.99,11.49-17.8v61.12 c-0.19,3.13-0.29,6.33-0.29,9.61c0,32.54,9.64,58.92,21.53,58.92s21.53-26.38,21.53-58.92c0-0.94-0.01-1.87-0.03-2.8h31.82 c-0.03,1.36-0.06,2.73-0.06,4.11c0,32.54,9.64,58.92,21.53,58.92s21.53-26.38,21.53-58.92c0-6.43-0.38-12.61-1.08-18.4v-52.94 c3.14,5.69,6.92,11.57,11.28,17.41c19.46,26.08,42.96,41.46,52.49,34.35S370.89,350.32,351.43,324.24z"/>'));
@@ -44,8 +44,7 @@ contract ShirokumaStudentV1 is ERC721Enumerable, Ownable, ReentrancyGuard {
         parts[7] = string(abi.encodePacked('<ellipse fill="', st1, '" transform="matrix(0.5663 -0.8242 0.8242 0.5663 84.4733 333.6321)" cx="359.26" cy="86.55" rx="15.2" ry="17.88"/>'));
         parts[8] = string(abi.encodePacked('<ellipse fill="', st1, '" transform="matrix(0.8242 -0.5663 0.5663 0.8242 -25.773 97.3399)" cx="143.89" cy="90.18" rx="17.88" ry="15.2"/>'));
         parts[9] = string(abi.encodePacked('<path fill="none" stroke="', st2, '" stroke-width="5" stroke-miterlimit="10" d="M247.28,210.18c0,7.83-6.3,14.16-14.09,14.16"/>'));
-        parts[10] = string(abi.encodePacked('<path fill="none" stroke="', st2, '" stroke-width="5" stroke-miterlimit="10" d="M248.6,210.18c0,7.83,6.3,14.16,14.09,14.16"/>'));
-        parts[11] = '</svg>';
+        parts[10] = string(abi.encodePacked('<path fill="none" stroke="', st2, '" stroke-width="5" stroke-miterlimit="10" d="M248.6,210.18c0,7.83,6.3,14.16,14.09,14.16"/></svg>'));
 
         return string(abi.encodePacked(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6], parts[7], parts[8], parts[9], parts[10]));
     }
@@ -100,9 +99,9 @@ contract ShirokumaStudentV1 is ERC721Enumerable, Ownable, ReentrancyGuard {
     }
 
     
-    constructor(address tokenAddress) ERC721("ShirokumaStudentV1", "SKV1") Ownable() {
+    constructor(address tokenAddress) ERC721("First Shirokuma Hero", "1SH") Ownable() {
         _token = ERC20(tokenAddress);
-        _money = 0.01 ether;
+        _money = 0.005 ether;
         _maxTotal = 10;
     }
 }
