@@ -78,6 +78,7 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
     function mint() public nonReentrant {
         require(_mintId < 23, "Token ID invalid");
         require(balanceOf(msg.sender) == 0, "Already mint invalid");
+        require(_stage == 1, "Already start invalid");
         _safeMint(msg.sender, _mintId);
         _mintId += 1;
     }
@@ -111,7 +112,6 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
     }
 
     constructor() ERC721("NFT Minority Vote", "NMV") Ownable() {
-        createQuestion("aaaaaa");
         _stage = 1;
     }
 }
@@ -175,4 +175,5 @@ library Base64 {
 
         return string(result);
     }
+
 }
