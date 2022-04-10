@@ -19,6 +19,7 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
     Question[] private _questions;
 
     uint256 private _stage;
+    uint256 private _mintId = 1;
 
     function createQuestion(string memory title) public nonReentrant onlyOwner {
         _questions.push(Question(title));
@@ -47,16 +48,16 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
                 }
             }
         }
-        if (yes > no) {
-            win = true;
-        } else if (no > yes) {
-            win = false;
-        }
-        for(uint256 i = 0; i < _votes.length; i++) {
-            if (_votes[i].questionId == questionId && _votes[i].answer != win) {
-                address from = ownerOf(_votes[i].tokenId);
-                address to = 0x0000000000000000000000000000000000000000;
-                _transfer(from, to, _votes[i].tokenId);
+        if (yes != no) {
+            if (yes < no) {
+                win = true;
+            } else if (no < yes) {
+                win = false;
+            }
+            for(uint256 i = 0; i < _votes.length; i++) {
+                if (_votes[i].questionId == questionId && _votes[i].answer != win) {
+                    _burn(_votes[i].tokenId); 
+                }
             }
         }
         _stage += 1;
@@ -75,9 +76,10 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
     }
 
     function mint() public nonReentrant {
-        require(totalSupply() < 23, "Token ID invalid");
+        require(_mintId < 23, "Token ID invalid");
         require(balanceOf(msg.sender) == 0, "Already mint invalid");
-        _safeMint(msg.sender, totalSupply() + 1);
+        _safeMint(msg.sender, _mintId);
+        _mintId += 1;
     }
 
     function tokenURI(uint256 tokenId) override public view returns (string memory) {
@@ -109,6 +111,7 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
     }
 
     constructor() ERC721("NFT Minority Vote", "NMV") Ownable() {
+        createQuestion("aaaaaa");
         _stage = 1;
     }
 }
@@ -172,7 +175,4 @@ library Base64 {
 
         return string(result);
     }
-
-        
-
 }
