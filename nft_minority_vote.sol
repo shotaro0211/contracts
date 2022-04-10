@@ -18,6 +18,8 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
     }
     Question[] private _questions;
 
+    uint256 private _stage;
+
     function createQuestion(string memory title) public nonReentrant onlyOwner {
         _questions.push(Question(title));
     }
@@ -30,9 +32,10 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
         }
     }
 
-    function execution(uint256 questionId) public nonReentrant onlyOwner {
+    function execution() public nonReentrant onlyOwner {
         uint256 yes = 0;
         uint256 no = 0;
+        uint256 questionId = _stage - 1;
         bool win;
 
         for(uint256 i = 0; i < _votes.length; i++) {
@@ -56,10 +59,15 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
                 _transfer(from, to, _votes[i].tokenId);
             }
         }
+        _stage += 1;
     }
 
     function getQuestions() public view returns (Question[] memory) {
         return _questions;
+    }
+
+    function getStage() public view returns (uint256) {
+        return _stage;
     }
 
     function getVotes() public view returns (Vote[] memory) {
@@ -68,10 +76,11 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
 
     function mint() public nonReentrant {
         require(totalSupply() < 23, "Token ID invalid");
-        _safeMint(owner(), totalSupply() + 1);
+        require(balanceOf(msg.sender) == 0, "Already mint invalid");
+        _safeMint(msg.sender, totalSupply() + 1);
     }
 
-    function tokenURI(uint256 tokenId) override public pure returns (string memory) {
+    function tokenURI(uint256 tokenId) override public view returns (string memory) {
         string memory json = Base64.encode(bytes(string(abi.encodePacked('{"name": "NFT Minority Vote #', toString(tokenId), '", "description": "", "image": "https://dentou-s3.s3.ap-northeast-1.amazonaws.com/NFT/nft_minority_vote/IMG_1249.png"}'))));
         string memory output = string(abi.encodePacked('data:application/json;base64,', json));
         return output;
@@ -99,7 +108,9 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
         return string(buffer);
     }
 
-    constructor() ERC721("NFT Minority Vote", "NMV") Ownable() {}
+    constructor() ERC721("NFT Minority Vote", "NMV") Ownable() {
+        _stage = 1;
+    }
 }
 
 /// [MIT License]
