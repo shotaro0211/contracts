@@ -59,7 +59,7 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
 
         _createVotes(answers);
 
-        for(uint256 i = 0; i < _votes.length; i++) {
+        for(uint256 i = _currentGameStartMintId - 1; i < answers.length; i++) {
             if (_votes[i].questionIndex == _currentQuestionIndex) {
                 if (_votes[i].answer == Answer.Yes) {
                     totalYes += 1;
@@ -76,14 +76,14 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
             } else if (totalNo < totalYes) {
                 win = Answer.No;
             }
-            for(uint256 i = 0; i < _votes.length; i++) {
+            for(uint256 i = _currentGameStartMintId - 1; i < answers.length; i++) {
                 if (_votes[i].questionIndex == _currentQuestionIndex && _votes[i].answer != win) {
                     _nfts[_votes[i].tokenId - 1].burn = true; 
                 }
             }
         }
         if (totalYes < 2 || totalNo < 2) {
-            for(uint256 i = 0; i < _votes.length; i++) {
+            for(uint256 i = _currentGameStartMintId - 1; i < answers.length; i++) {
                 if(_nfts[_votes[i].tokenId - 1].burn == false) {
                     _nfts[_votes[i].tokenId - 1].winner = true;
                 }
