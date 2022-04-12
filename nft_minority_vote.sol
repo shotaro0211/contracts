@@ -46,7 +46,7 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
     }
 
     function _createVotes(Answer[] memory answers) internal {
-        require(answers.length == _nextMintId - _currentGameStartMintId, "length invalid");
+        require(answers.length == _nextMintId - _currentGameStartMintId, toString(answers.length));
         for(uint256 i = 0; i < answers.length; i++) { 
             _votes.push(Vote(_currentGameStartMintId + i, answers[i], _currentQuestionIndex));
         }
@@ -108,6 +108,10 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
 
     function getCurrentQuestion() public view returns (Question memory) {
         return _questions[_currentQuestionIndex];
+    }
+
+    function getCurrentGameNftCount() public view returns (uint256) {
+        return _nextMintId - _currentGameStartMintId;
     }
 
     function getVote(uint256 index) public view returns (Vote memory) {
