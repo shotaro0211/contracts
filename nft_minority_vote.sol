@@ -38,11 +38,14 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
     uint256 private _currentGame;
     uint256 private _currentGameStartMintId;
     uint256 private _currentStage;
+    uint8 private _drawCount = 0;
+
     uint256 private _nextMintId;
     uint256 private _mintValue;
-    bool private _lock;
+    bool private _mintLock;
+    
     string[] private _imageUrlList;
-    uint8 private _drawCount = 0;
+
 
     function _createQuestion(string memory title) internal {
         _questions.push(Question(title, _currentStage, _currentGame));
@@ -56,15 +59,11 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
         }
     }
 
-    function getCurrentStartVoteIndex() public view returns (uint256) {
-        return (_currentGameStartMintId - 1) + (getCurrentGameNftCount() * (_currentStage - 1));
-    }
-
     function nextQuestion(string memory title, Answer[] memory answers) public nonReentrant onlyOwner {
+        Answer win;
         uint256 totalYes = 0;
         uint256 totalNo = 0;
         uint256 nextVoteIndex = _votes.length;
-        Answer win;
 
         _createVotes(answers);
 
@@ -77,6 +76,7 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
                 _nfts[_votes[i].tokenId - 1].burn = true; 
             }
         }
+
         if (totalYes != totalNo) {
             win = (totalYes < totalNo) ? Answer.Yes : Answer.No;
             for (uint256 i = nextVoteIndex; i < nextVoteIndex + answers.length; i++) {
@@ -88,6 +88,7 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
         } else {
             _drawCount += 1;
         }
+
         if ((totalYes < 2 || totalNo < 2) || _drawCount == 3) {
             for (uint256 i = nextVoteIndex; i < nextVoteIndex + answers.length; i++) {
                 if (_nfts[_votes[i].tokenId - 1].burn == false) {
@@ -101,6 +102,7 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
         } else {
             _currentStage += 1;
         }
+
         _createQuestion(title);
     }
 
@@ -137,12 +139,12 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
         _mintValue = value;
     }
 
-    function getLock() public view returns (bool lock) {
-        return _lock;
+    function getMintLock() public view returns (bool lock) {
+        return _mintLock;
     }
 
-    function setLock(bool lock) public onlyOwner {
-        _lock = lock;
+    function setMintLock(bool mintLock) public onlyOwner {
+        _mintLock = mintLock;
     }
 
     function mint() public nonReentrant payable {
@@ -157,7 +159,7 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
     }
 
     function _claim(address taker) internal {
-        require(_lock == false, "Already locked invalid");
+        require(_mintLock == false, "Already locked invalid");
         require(_currentStage == 1, "Already start invalid");
         _nfts.push(Nft(1, _currentGame, false, false));
         _safeMint(taker, _nextMintId);
@@ -224,7 +226,8 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
 
         _mintValue = 1 ether;
         _nextMintId = 1;
-        _lock = false;
+        _mintLock = false;
+
         _imageUrlList.push("");
     }
 }
