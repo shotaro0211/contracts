@@ -41,6 +41,8 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
     uint256 private _nextMintId;
     uint256 private _mintValue;
     bool private _lock;
+    string[] private _imageUrlList;
+    uint256 private _noGame = 0;
 
     function _createQuestion(string memory title) internal {
         _questions.push(Question(title, _currentStage, _currentGame));
@@ -83,13 +85,17 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
                     _nfts[_votes[i].tokenId - 1].burn = true; 
                 }
             }
+            _noGame = 0;
+        } else {
+            _noGame += 1;
         }
-        if (totalYes < 2 || totalNo < 2) {
+        if ((totalYes < 2 || totalNo < 2) || _noGame == 3) {
             for(uint256 i = _currentGameStartMintId - 1; i < answers.length; i++) {
                 if(_nfts[_votes[i].tokenId - 1].burn == false) {
                     _nfts[_votes[i].tokenId - 1].winner = true;
                 }
             }
+            _noGame = 0;
             _currentGame += 1;
             _currentGameStartMintId = _nextMintId;
             _currentStage = 1;
@@ -159,21 +165,29 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
         payable(owner()).transfer(address(this).balance);
     }
 
+    function createImageUrl(string memory url) public onlyOwner {
+        _imageUrlList.push(url);
+    }
+
+    function getImageUrl(uint256 game) public view returns (string memory) {
+        return _imageUrlList[game];
+    }
+
     function tokenURI(uint256 tokenId) override public view returns (string memory) {
         Nft memory nft = getNft(tokenId);
         string memory imageName = _getImageName(nft);
-        string memory json = Base64.encode(bytes(string(abi.encodePacked('{"name": "NFT Minority Vote #', toString(tokenId), '", "description": "", "image": "https://dentou-s3.s3.ap-northeast-1.amazonaws.com/NFT/nft_minority_vote/', imageName, '.png"}'))));
+        string memory json = Base64.encode(bytes(string(abi.encodePacked('{"name": "NFT Minority Vote #', toString(tokenId), '", "description": "", "image": "', _imageUrlList[nft.game], imageName, '.png"}'))));
         string memory output = string(abi.encodePacked('data:application/json;base64,', json));
         return output;
     }
 
     function _getImageName(Nft memory nft) internal pure returns (string memory) {
         if (nft.burn == true) {
-            return "burn";
+            return string(abi.encodePacked("burn", toString(nft.game), toString(nft.stage)));
         } else if (nft.winner == true) {
-            return "winner";
+            return string(abi.encodePacked("winner", toString(nft.game)));
         } else {
-            return toString(nft.stage);
+            return string(abi.encodePacked(toString(nft.game), toString(nft.stage)));
         }
     }
 
@@ -208,6 +222,7 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
         _mintValue = 1 ether;
         _nextMintId = 1;
         _lock = false;
+        _imageUrlList.push("");
     }
 }
 
