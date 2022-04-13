@@ -39,6 +39,8 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
     uint256 private _currentGameStartMintId;
     uint256 private _currentStage;
     uint256 private _nextMintId;
+    uint256 private _mintValue;
+    bool private _lock;
 
     function _createQuestion(string memory title) internal {
         _questions.push(Question(title, _currentStage, _currentGame));
@@ -118,11 +120,43 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
         return _votes[index];
     }
 
-    function mint() public nonReentrant onlyOwner {
+    function getMintValue() public view returns (uint256 value) {
+        return _mintValue;
+    }
+
+    function setMintValue(uint256 value) public onlyOwner {
+        _mintValue = value;
+    }
+
+    function getLock() public view returns (bool lock) {
+        return _lock;
+    }
+
+    function setLock(bool lock) public onlyOwner {
+        _lock = lock;
+    }
+
+    function mint() public nonReentrant payable {
+        require(msg.value == _mintValue, "value invalid");
+        _claim(msg.sender);
+    }
+
+    function ownerMints(address[] memory takers) public onlyOwner {
+        for(uint256 i = 0; i < takers.length; i++) {
+            _claim(takers[i]);
+        }
+    }
+
+    function _claim(address taker) internal {
+        require(_lock == false, "Already locked invalid");
         require(_currentStage == 1, "Already start invalid");
         _nfts.push(Nft(1, _currentGame, false, false));
-        _safeMint(msg.sender, _nextMintId);
+        _safeMint(taker, _nextMintId);
         _nextMintId += 1;
+    }
+
+    function withdraw() public onlyOwner {
+        payable(owner()).transfer(address(this).balance);
     }
 
     function tokenURI(uint256 tokenId) override public view returns (string memory) {
@@ -171,7 +205,9 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
         _currentStage = 1;
         _questions.push(Question(title, 1, 1));
 
-        _nextMintId = 1;   
+        _mintValue = 1 ether;
+        _nextMintId = 1;
+        _lock = false;
     }
 }
 
