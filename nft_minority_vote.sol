@@ -50,7 +50,7 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
     }
 
     function _createVotes(Answer[] memory answers) internal {
-        require(answers.length == _nextMintId - _currentGameStartMintId, toString(answers.length));
+        require(answers.length == getCurrentGameNftCount(), toString(answers.length));
         for(uint256 i = 0; i < answers.length; i++) { 
             _votes.push(Vote(_currentGameStartMintId + i, answers[i], _currentQuestionIndex));
         }
@@ -69,14 +69,12 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
         _createVotes(answers);
 
         for(uint256 i = svi; i < svi + answers.length; i++) {
-            if (_votes[i].questionIndex == _currentQuestionIndex) {
-                if (_votes[i].answer == Answer.Yes) {
-                    totalYes += 1;
-                } else if (_votes[i].answer == Answer.No) {
-                    totalNo += 1;
-                } else if (_votes[i].answer == Answer.Null) {
-                    _nfts[_votes[i].tokenId - 1].burn = true; 
-                }
+            if (_votes[i].answer == Answer.Yes) {
+                totalYes += 1;
+            } else if (_votes[i].answer == Answer.No) {
+                totalNo += 1;
+            } else if (_votes[i].answer == Answer.Null) {
+                _nfts[_votes[i].tokenId - 1].burn = true; 
             }
         }
         if (totalYes != totalNo) {
@@ -86,7 +84,7 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
                 win = Answer.No;
             }
             for(uint256 i = svi; i < svi + answers.length; i++) {
-                if (_votes[i].questionIndex == _currentQuestionIndex && _votes[i].answer != win) {
+                if (_votes[i].answer != win) {
                     _nfts[_votes[i].tokenId - 1].burn = true; 
                 }
             }
