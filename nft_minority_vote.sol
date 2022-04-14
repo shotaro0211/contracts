@@ -60,7 +60,7 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
     }
 
     function nextQuestion(string memory title, Answer[] memory answers) public nonReentrant onlyOwner {
-        Answer win;
+        Answer lose;
         uint256 totalYes = 0;
         uint256 totalNo = 0;
         uint256 nextVoteIndex = _votes.length;
@@ -73,23 +73,29 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
             } else if (_votes[i].answer == Answer.No) {
                 totalNo += 1;
             } else if (_votes[i].answer == Answer.Null) {
-                _nfts[_votes[i].tokenId - 1].burn = true; 
+                if (answers.length > 2) {
+                    _nfts[_votes[i].tokenId - 1].burn = true;
+                } 
             }
         }
 
         if (totalYes != totalNo) {
-            win = (totalYes < totalNo) ? Answer.Yes : Answer.No;
+            lose = (totalYes < totalNo) ? Answer.No : Answer.Yes;
             for (uint256 i = nextVoteIndex; i < nextVoteIndex + answers.length; i++) {
-                if (_votes[i].answer != win) {
+                if (_votes[i].answer == lose) {
                     _nfts[_votes[i].tokenId - 1].burn = true; 
                 }
             }
             _drawCount = 0;
+        } else if (answers.length < 3 && totalYes == 0 && totalNo == 0) {
+            for (uint256 i = nextVoteIndex; i < nextVoteIndex + answers.length; i++) {
+                _nfts[_votes[i].tokenId - 1].burn = true;
+            }
         } else {
             _drawCount += 1;
         }
 
-        if ((totalYes < 2 || totalNo < 2) || _drawCount == 3) {
+        if ((answers.length < 3 && (totalYes == 0 || totalNo == 0)) || (answers.length > 2 && (totalYes < 2 || totalNo < 2)) || _drawCount == 3) {
             for (uint256 i = nextVoteIndex; i < nextVoteIndex + answers.length; i++) {
                 if (_nfts[_votes[i].tokenId - 1].burn == false) {
                     _nfts[_votes[i].tokenId - 1].winner = true;
@@ -106,6 +112,7 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
                     _nfts[_votes[i].tokenId - 1].stage = _currentStage;
                 }
             }
+            
         }
 
         _createQuestion(title);
