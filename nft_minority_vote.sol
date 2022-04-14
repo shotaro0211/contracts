@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
+contract MinorityVote24224 is ERC721Enumerable, ReentrancyGuard, Ownable {
     enum Answer {
         No,
         Yes,
@@ -37,6 +37,7 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
     uint256 private _currentQuestionIndex;
     uint256 private _currentGame;
     uint256 private _currentGameStartMintId;
+    uint256 private _currentGameSurvivorNftCount;
     uint256 private _currentStage;
     uint8 private _drawCount = 0;
 
@@ -67,13 +68,17 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
 
         _createVotes(answers);
 
+        if (getCurrentQuestion().stage == 1) {
+            _currentGameSurvivorNftCount = answers.length;
+        }
+
         for(uint256 i = nextVoteIndex; i < nextVoteIndex + answers.length; i++) {
             if (_votes[i].answer == Answer.Yes) {
                 totalYes += 1;
             } else if (_votes[i].answer == Answer.No) {
                 totalNo += 1;
             } else if (_votes[i].answer == Answer.Null) {
-                if (answers.length > 2) {
+                if (_currentGameSurvivorNftCount > 2) {
                     _nfts[_votes[i].tokenId - 1].burn = true;
                 } 
             }
@@ -87,7 +92,7 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
                 }
             }
             _drawCount = 0;
-        } else if (answers.length < 3 && totalYes == 0 && totalNo == 0) {
+        } else if (_currentGameSurvivorNftCount < 3 && totalYes == 0 && totalNo == 0) {
             for (uint256 i = nextVoteIndex; i < nextVoteIndex + answers.length; i++) {
                 _nfts[_votes[i].tokenId - 1].burn = true;
             }
@@ -95,7 +100,7 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
             _drawCount += 1;
         }
 
-        if ((answers.length < 3 && (totalYes == 0 || totalNo == 0)) || (answers.length > 2 && (totalYes < 2 || totalNo < 2)) || _drawCount == 3) {
+        if ((_currentGameSurvivorNftCount < 3 && (totalYes == 0 || totalNo == 0)) || (_currentGameSurvivorNftCount > 2 && (totalYes < 2 || totalNo < 2)) || _drawCount == 3) {
             for (uint256 i = nextVoteIndex; i < nextVoteIndex + answers.length; i++) {
                 if (_nfts[_votes[i].tokenId - 1].burn == false) {
                     _nfts[_votes[i].tokenId - 1].winner = true;
@@ -114,6 +119,8 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
             }
             
         }
+
+        _currentGameSurvivorNftCount = (totalYes < totalNo) ? totalYes : totalNo;
 
         _createQuestion(title);
     }
@@ -230,7 +237,7 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
         return string(buffer);
     }
 
-    constructor(string memory title) ERC721("NFT Minority Vote", "NMV") Ownable() {
+    constructor(string memory title) ERC721("NFT Minority Vote2423", "NMV4232") Ownable() {
         _currentGame = 1;
         _currentGameStartMintId = 1;
         _currentStage = 1;
