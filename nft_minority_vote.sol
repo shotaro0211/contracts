@@ -7,8 +7,8 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
     enum Answer {
-        Yes,
         No,
+        Yes,
         Null
     }
 
