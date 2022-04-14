@@ -101,6 +101,11 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
             _currentStage = 1;
         } else {
             _currentStage += 1;
+            for (uint256 i = nextVoteIndex; i < nextVoteIndex + answers.length; i++) {
+                if (_nfts[_votes[i].tokenId - 1].burn == false) {
+                    _nfts[_votes[i].tokenId - 1].stage = _currentStage;
+                }
+            }
         }
 
         _createQuestion(title);
@@ -224,7 +229,7 @@ contract MinorityVote is ERC721Enumerable, ReentrancyGuard, Ownable {
         _currentStage = 1;
         _questions.push(Question(title, 1, 1));
 
-        _mintValue = 1 ether;
+        _mintValue = 0 ether;
         _nextMintId = 1;
         _mintLock = false;
 
