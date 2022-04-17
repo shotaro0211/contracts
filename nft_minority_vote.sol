@@ -142,6 +142,19 @@ contract MinorityVote24224 is ERC721Enumerable, ReentrancyGuard, Ownable {
         return _nextMintId - _currentGameStartMintId;
     }
 
+    function getCurrentGameNftId(address owner) public view returns (uint256) {
+        for(uint256 i = _currentGameStartMintId; i < _nextMintId; i++) {
+            if (ownerOf(i) == owner) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    function getCurrentGameSurvivorNftCount() public view returns (uint256) {
+        return _currentGameSurvivorNftCount;
+    }
+
     function getDrawCount() public view returns (uint256) {
         return _drawCount;
     }
