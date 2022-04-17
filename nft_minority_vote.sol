@@ -206,6 +206,13 @@ contract MinorityVote24224 is ERC721Enumerable, ReentrancyGuard, Ownable {
         payable(owner()).transfer(address(this).balance);
     }
 
+    function getNftImageUrl(uint256 tokenId) public view returns (string memory) {
+        Nft memory nft = getNft(tokenId);
+        string memory imageName = _getImageName(nft);
+        string memory url = string(abi.encodePacked(_imageUrlList[nft.game], imageName, '.png'));
+        return url;
+    }
+
     function createImageUrl(string memory url) public onlyOwner {
         _imageUrlList.push(url);
     }
