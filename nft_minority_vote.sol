@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract MinorityVote24224 is ERC721Enumerable, ReentrancyGuard, Ownable {
+contract LiarVerse24224 is ERC721Enumerable, ReentrancyGuard, Ownable {
     enum Answer {
         No,
         Yes,
@@ -119,7 +119,11 @@ contract MinorityVote24224 is ERC721Enumerable, ReentrancyGuard, Ownable {
             }
             
         }
-
+        if (totalYes == totalNo) {
+            _currentGameSurvivorNftCount = totalYes + totalNo;
+        } else {
+            _currentGameSurvivorNftCount = (totalYes < totalNo) ? totalYes : totalNo;
+        }
         _currentGameSurvivorNftCount = (totalYes < totalNo) ? totalYes : totalNo;
 
         _createQuestion(title);
@@ -261,7 +265,7 @@ contract MinorityVote24224 is ERC721Enumerable, ReentrancyGuard, Ownable {
         return string(buffer);
     }
 
-    constructor(string memory title) ERC721("NFT Minority Vote2423", "NMV4232") Ownable() {
+    constructor(string memory title) ERC721("LiarVerse2423", "LV4232") Ownable() {
         _currentGame = 1;
         _currentGameStartMintId = 1;
         _currentStage = 1;
