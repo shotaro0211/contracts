@@ -46,6 +46,7 @@ contract LiarVerse24224 is ERC721Enumerable, ReentrancyGuard, Ownable {
     bool private _mintLock;
     
     string[] private _imageUrlList;
+    string[] private _gameTitleList;
 
 
     function _createQuestion(string memory title) internal {
@@ -217,18 +218,25 @@ contract LiarVerse24224 is ERC721Enumerable, ReentrancyGuard, Ownable {
         return url;
     }
 
-    function createImageUrl(string memory url) public onlyOwner {
+    function createGame(string memory title, string memory url) public onlyOwner {
+        _gameTitleList.push(title);
         _imageUrlList.push(url);
     }
 
-    function getImageUrl(uint256 game) public view returns (string memory) {
-        return _imageUrlList[game];
+    function getGameTitle(uint256 game) public view returns (string memory) {
+        return _gameTitleList[game];
     }
+
+    function _attributes(string memory title, bool winner, bool burn) internal pure returns (string memory) {
+        string memory att = string(abi.encodePacked('"attributes": [{"trait_type": "Game Title", "value": "', title, '"}, {"trait_type": "Winner", "value": "', winner ? 'true' : 'false', '"}, {"trait_type": "Burn", "value": "', burn ? 'true' : 'false', '"}]'));
+        return att;
+    } 
 
     function tokenURI(uint256 tokenId) override public view returns (string memory) {
         Nft memory nft = getNft(tokenId);
-        string memory imageName = _getImageName(nft);
-        string memory json = Base64.encode(bytes(string(abi.encodePacked('{"name": "NFT Minority Vote #', toString(tokenId), '", "description": "", "image": "', _imageUrlList[nft.game], imageName, '.png"}'))));
+        string memory gameTitle = _gameTitleList[nft.game];
+        string memory att = _attributes(gameTitle, nft.winner, nft.burn);
+        string memory json = Base64.encode(bytes(string(abi.encodePacked('{"name": "LiarVerse #', toString(tokenId), '", "description": "", "image": "', getNftImageUrl(tokenId), '", ', att, '}'))));
         string memory output = string(abi.encodePacked('data:application/json;base64,', json));
         return output;
     }
@@ -265,7 +273,7 @@ contract LiarVerse24224 is ERC721Enumerable, ReentrancyGuard, Ownable {
         return string(buffer);
     }
 
-    constructor(string memory title) ERC721("LiarVerse2423", "LV4232") Ownable() {
+    constructor(string memory title, string memory gameTitle, string memory imageUrl) ERC721("LiarVerse2423", "LIAR4232") Ownable() {
         _currentGame = 1;
         _currentGameStartMintId = 1;
         _currentStage = 1;
@@ -276,6 +284,9 @@ contract LiarVerse24224 is ERC721Enumerable, ReentrancyGuard, Ownable {
         _mintLock = false;
 
         _imageUrlList.push("");
+        _gameTitleList.push("");
+        _imageUrlList.push(imageUrl);
+        _gameTitleList.push(gameTitle);
     }
 }
 
