@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract LiarVerse24224 is ERC721Enumerable, ReentrancyGuard, Ownable {
+contract LiarVerseAlpha is ERC721Enumerable, ReentrancyGuard, Ownable {
     enum Answer {
         No,
         Yes,
@@ -39,7 +39,7 @@ contract LiarVerse24224 is ERC721Enumerable, ReentrancyGuard, Ownable {
     uint256 private _currentGameStartMintId;
     uint256 private _currentGameSurvivorNftCount;
     uint256 private _currentStage;
-    uint8 private _drawCount = 0;
+    uint8 private _drawCount;
 
     uint256 private _nextMintId;
     uint256 private _mintValue;
@@ -236,7 +236,7 @@ contract LiarVerse24224 is ERC721Enumerable, ReentrancyGuard, Ownable {
         Nft memory nft = getNft(tokenId);
         string memory gameTitle = _gameTitleList[nft.game];
         string memory att = _attributes(gameTitle, nft.winner, nft.burn);
-        string memory json = Base64.encode(bytes(string(abi.encodePacked('{"name": "LiarVerse #', toString(tokenId), '", "description": "", "image": "', getNftImageUrl(tokenId), '", ', att, '}'))));
+        string memory json = Base64.encode(bytes(string(abi.encodePacked('{"name": "LiarVerse Alpha #', toString(tokenId), '", "description": "", "image": "', getNftImageUrl(tokenId), '", ', att, '}'))));
         string memory output = string(abi.encodePacked('data:application/json;base64,', json));
         return output;
     }
@@ -273,10 +273,11 @@ contract LiarVerse24224 is ERC721Enumerable, ReentrancyGuard, Ownable {
         return string(buffer);
     }
 
-    constructor(string memory title, string memory gameTitle, string memory imageUrl) ERC721("LiarVerse2423", "LIAR4232") Ownable() {
+    constructor(string memory title, string memory gameTitle, string memory imageUrl) ERC721("LiarVerse Alpha", "LIAR") Ownable() {
         _currentGame = 1;
         _currentGameStartMintId = 1;
         _currentStage = 1;
+        _drawCount = 0;
         _questions.push(Question(title, 1, 1));
 
         _mintValue = 0 ether;
