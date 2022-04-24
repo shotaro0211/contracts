@@ -85,6 +85,8 @@ contract LiarVerseAlpha is ERC721Enumerable, ReentrancyGuard, Ownable {
             }
         }
 
+        uint256 total = totalYes + totalNo;
+
         if (totalYes != totalNo) {
             lose = (totalYes < totalNo) ? Answer.No : Answer.Yes;
             for (uint256 i = nextVoteIndex; i < nextVoteIndex + answers.length; i++) {
@@ -93,7 +95,7 @@ contract LiarVerseAlpha is ERC721Enumerable, ReentrancyGuard, Ownable {
                 }
             }
             _drawCount = 0;
-        } else if (_currentGameSurvivorNftCount < 3 && totalYes == 0 && totalNo == 0) {
+        } else if (total < 3 && totalYes == 0 && totalNo == 0) {
             for (uint256 i = nextVoteIndex; i < nextVoteIndex + answers.length; i++) {
                 _nfts[_votes[i].tokenId - 1].burn = true;
             }
@@ -101,7 +103,7 @@ contract LiarVerseAlpha is ERC721Enumerable, ReentrancyGuard, Ownable {
             _drawCount += 1;
         }
 
-        if ((_currentGameSurvivorNftCount < 3 && (totalYes == 0 || totalNo == 0)) || (_currentGameSurvivorNftCount > 2 && (totalYes < 2 || totalNo < 2)) || _drawCount == 3) {
+        if ((total < 3 && (totalYes == 0 || totalNo == 0)) || (total > 2 && (totalYes < 2 || totalNo < 2)) || _drawCount == 3) {
             for (uint256 i = nextVoteIndex; i < nextVoteIndex + answers.length; i++) {
                 if (_nfts[_votes[i].tokenId - 1].burn == false) {
                     _nfts[_votes[i].tokenId - 1].winner = true;
@@ -121,7 +123,7 @@ contract LiarVerseAlpha is ERC721Enumerable, ReentrancyGuard, Ownable {
             
         }
         if (totalYes == totalNo) {
-            _currentGameSurvivorNftCount = totalYes + totalNo;
+            _currentGameSurvivorNftCount = total;
         } else {
             _currentGameSurvivorNftCount = (totalYes < totalNo) ? totalYes : totalNo;
         }
