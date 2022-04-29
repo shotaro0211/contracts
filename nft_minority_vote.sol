@@ -127,7 +127,6 @@ contract LiarVerseAlpha is ERC721Enumerable, ReentrancyGuard, Ownable {
         } else {
             _currentGameSurvivorNftCount = (totalYes < totalNo) ? totalYes : totalNo;
         }
-        _currentGameSurvivorNftCount = (totalYes < totalNo) ? totalYes : totalNo;
 
         _createQuestion(title);
     }
